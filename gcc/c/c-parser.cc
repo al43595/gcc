@@ -12642,6 +12642,38 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
       switch (c_parser_peek_token (parser)->type)
 	{
 	case CPP_OPEN_SQUARE:
+    if (c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
+    {
+        // Consume both opening square brackets `[[`
+        c_parser_consume_token(parser);  // First `[`
+        c_parser_consume_token(parser);  // Second `[`
+
+        // Parse the first IntExpression
+        struct c_expr int_expr1 = c_parser_expression(parser);
+        c_parser_consume_token(parser);  // Consume the `,`
+
+        // Parse the middle Expression
+        struct c_expr middle_expr = c_parser_expression(parser);
+        c_parser_consume_token(parser);  // Consume the `,`
+
+        // Parse the second IntExpression
+        struct c_expr int_expr2 = c_parser_expression(parser);
+        c_parser_consume_token(parser);  // Consume `]]`
+
+        // Custom logic: loop until int_expr1 == int_expr2
+        while (int_expr1.value != int_expr2.value)
+        {
+            // Increment the first int expression
+            int_expr1.value += 1;
+
+            // Reevaluate the middle expression
+            middle_expr = c_parser_expression(parser);
+        }
+
+        // Return the result of the evaluated middle expression
+        expr = middle_expr;
+        break;
+    }
 	  /* Array reference.  */
 	  c_parser_consume_token (parser);
 	  idx = len = NULL_TREE;
